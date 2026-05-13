@@ -13,7 +13,7 @@ ARQUIVOS = {
     "acidentes_2024_pessoas.csv":     "14lVfqdoE2gxDliaKZu7K9Mx6847maPtl",
 }
 
-# Funções 
+# Funções
 
 def montar_url_drive(file_id: str) -> str:
     return f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t"

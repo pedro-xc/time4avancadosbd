@@ -62,25 +62,25 @@ def main():
     print("=== ETAPA 2 — INTEGRAÇÃO DE DADOS ===\n")
 
     # Leitura
-    print("-- Lendo arquivos de ocorrências --")
+    print("Lendo arquivos de ocorrências")
     oc_2023 = ler_csv_prf("acidentes_2023_ocorrencias.csv")
     oc_2024 = ler_csv_prf("acidentes_2024_ocorrencias.csv")
 
-    print("\n-- Lendo arquivos de pessoas --")
+    print("\nLendo arquivos de pessoas")
     pe_2023 = ler_csv_prf("acidentes_2023_pessoas.csv")
     pe_2024 = ler_csv_prf("acidentes_2024_pessoas.csv")
 
     # Concatenação por ano
-    print("\n-- Concatenando anos --")
+    print("\n Concatenando anos --")
     df_ocorrencias = concatenar_anos(oc_2023, oc_2024, "Ocorrências")
     df_pessoas     = concatenar_anos(pe_2023, pe_2024, "Pessoas")
 
     # Merge ocorrências + pessoas
-    print("\n-- Fazendo merge ocorrências x pessoas --")
+    print("\nFazendo merge ocorrências x pessoas")
     df_merged = fazer_merge(df_ocorrencias, df_pessoas)
 
     # Salvando
-    print("\n-- Salvando arquivos processados --")
+    print("\n Salvando arquivos processados")
 
     caminho_ocorrencias = os.path.join(PROCESSED_DIR, "ocorrencias_concat.csv")
     caminho_pessoas     = os.path.join(PROCESSED_DIR, "pessoas_concat.csv")

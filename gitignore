@@ -1,5 +1,4 @@
-# Dados — não versionar CSVs grandes
-data/raw/
+# Dados processados 
 data/processed/
 
 # Python

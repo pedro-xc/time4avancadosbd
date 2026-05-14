@@ -1,5 +1,5 @@
-# Dados processados 
 data/processed/
+data/raw/ibge_populacao.csv
 
 # Python
 __pycache__/

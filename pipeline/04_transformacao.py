@@ -9,7 +9,7 @@ PROCESSED_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "processed
 ENTRADA = os.path.join(PROCESSED_DIR, "acidentes_limpos.csv")
 SAIDA   = os.path.join(PROCESSED_DIR, "acidentes_final.csv")
 
-# Funções
+# Funções para carregar e transformar os dados
 
 def carregar(caminho: str) -> pd.DataFrame:
     df = pd.read_csv(caminho, low_memory=False, sep=";", encoding="utf-8-sig", parse_dates=["data_inversa"])

@@ -9,7 +9,7 @@ PROCESSED_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "processed
 ENTRADA = os.path.join(PROCESSED_DIR, "acidentes_limpos.csv")
 SAIDA   = os.path.join(PROCESSED_DIR, "acidentes_final.csv")
 
-# Funções para carregar e transformar os dados
+# Funções
 
 def carregar(caminho: str) -> pd.DataFrame:
     df = pd.read_csv(caminho, low_memory=False, sep=";", encoding="utf-8-sig", parse_dates=["data_inversa"])
@@ -64,6 +64,10 @@ def adicionar_colunas_derivadas(df: pd.DataFrame) -> pd.DataFrame:
 
     df["fim_de_semana"] = df["dia_semana"].isin(["SÁBADO", "DOMINGO", "SABADO"])
     print("[TRANSF] Coluna criada: fim_de_semana")
+
+    if "populacao" in df.columns:
+        df["taxa_acidentes_por_100k"] = (1 / df["populacao"] * 100000).round(4)
+        print("[TRANSF] Coluna criada: taxa_acidentes_por_100k")
 
     return df
 

@@ -1,7 +1,6 @@
 # Dashboard de Acidentes em Rodovias Federais — PRF
 
-**Disciplina:** Análise Prática de Dados  
-**Professor:** José Guilherme Picolo  
+**Disciplina:** Estudos Avançados de Banco De Dados
 **Time:** 4  
 **Integrantes:**
 - Gabriel Flores
@@ -56,7 +55,6 @@ projeto-acidentes-prf/
 │       └── layout.py                 # Componentes de layout Dash
 │
 ├── app.py                            # Ponto de entrada da aplicação
-├── requirements.txt                  # Dependências do projeto
 └── README.md
 ```
 

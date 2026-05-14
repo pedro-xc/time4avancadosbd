@@ -91,9 +91,6 @@ def coletar_populacao_ibge(ano: str) -> list:
 
 
 def coletar_ibge() -> None:
-    """Coleta população de 2024 via API do IBGE e salva CSV.
-    Obs: 2024 é o último ano disponível na tabela 6579 do IBGE.
-    """
     destino = os.path.join(RAW_DIR, "ibge_populacao.csv")
 
     if os.path.exists(destino):

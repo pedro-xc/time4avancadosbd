@@ -12,7 +12,7 @@ SAIDA   = os.path.join(PROCESSED_DIR, "acidentes_limpos.csv")
 # Colunas numéricas que representam contagens de vítimas
 COLUNAS_VITIMAS = ["mortos", "feridos_leves", "feridos_graves", "ilesos", "feridos", "veiculos"]
 
-# Colunas categóricas para padronizar
+# Colunas categóricas para padronizar as strings e tratar nulos
 COLUNAS_CATEGORICAS = [
     "uf", "dia_semana", "causa_acidente", "tipo_acidente",
     "classificacao_acidente", "fase_dia", "sentido_via",

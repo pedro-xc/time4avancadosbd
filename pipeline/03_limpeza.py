@@ -22,7 +22,7 @@ COLUNAS_CATEGORICAS = [
 # Funções
 
 def carregar(caminho: str) -> pd.DataFrame:
-    df = pd.read_csv(caminho, low_memory=False)
+    df = pd.read_csv(caminho, low_memory=False, sep=";", encoding="utf-8-sig")
     print(f"[LER]  {len(df):,} registros carregados")
     return df
 
@@ -124,9 +124,9 @@ def remover_inconsistencias(df: pd.DataFrame) -> pd.DataFrame:
         if col in df.columns:
             df = df[df[col] >= 0]
 
-    # Remove registros fora do período esperado (2023-2024)
+    # Remove registros fora do período esperado (2024)
     if "data_inversa" in df.columns:
-        df = df[df["data_inversa"].dt.year.isin([2023, 2024])]
+        df = df[df["data_inversa"].dt.year == 2024]
 
     depois = len(df)
     print(f"[INCO] Removidos {antes - depois:,} registros inconsistentes")
@@ -134,11 +134,11 @@ def remover_inconsistencias(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
-    print("=== ETAPA 3 — LIMPEZA E TRATAMENTO ===\n")
+    print("ETAPA 3 — LIMPEZA E TRATAMENTO\n")
 
     df = carregar(ENTRADA)
 
-    print("\nRelatório de nulos antes da limpeza")
+    print("\nRelatório de nulos ANTES da limpeza")
     relatorio_nulos(df)
 
     print("\nRemovendo duplicatas")
@@ -164,7 +164,7 @@ def main():
 
     print(f"\nDataset final: {len(df):,} registros, {df.shape[1]} colunas")
 
-    df.to_csv(SAIDA, index=False, encoding="utf-8-sig", sep=",")
+    df.to_csv(SAIDA, index=False, encoding="utf-8-sig", sep=";")
     print(f"\n[OK] acidentes_limpos.csv salvo em data/processed/")
     print("[CONCLUÍDO]")
 

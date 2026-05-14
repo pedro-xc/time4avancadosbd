@@ -1,6 +1,7 @@
-# time4avancadosbd# Dashboard de Acidentes em Rodovias Federais — PRF
+# Dashboard de Acidentes em Rodovias Federais — PRF
 
-**Disciplina:** Estudo Avançados de Banco de Dados
+**Disciplina:** Análise Prática de Dados  
+**Professor:** José Guilherme Picolo  
 **Time:** 4  
 **Integrantes:**
 - Gabriel Flores
@@ -13,7 +14,7 @@
 
 ## Sobre o Projeto
 
-Este projeto tem como objetivo analisar os acidentes registrados nas rodovias federais brasileiras nos anos de 2023 e 2024, utilizando dados públicos da Polícia Rodoviária Federal (PRF).
+Este projeto tem como objetivo analisar os acidentes registrados nas rodovias federais brasileiras em 2024, utilizando dados públicos da Polícia Rodoviária Federal (PRF) cruzados com estimativas populacionais do IBGE.
 
 A análise busca identificar padrões de risco, comparar o comportamento dos acidentes entre estados, períodos do dia, condições climáticas e causas mais frequentes, comunicando os resultados por meio de dois dashboards interativos construídos com Python e Dash.
 
@@ -21,14 +22,14 @@ A análise busca identificar padrões de risco, comparar o comportamento dos aci
 
 ## Fontes de Dados
 
-| Arquivo | Fonte | Descrição |
-|---|---|---|
-| `acidentes_2023_ocorrencias.csv` | PRF — Dados Abertos | Um registro por acidente em 2023 |
-| `acidentes_2023_pessoas.csv` | PRF — Dados Abertos | Um registro por pessoa envolvida em 2023 |
-| `acidentes_2024_ocorrencias.csv` | PRF — Dados Abertos | Um registro por acidente em 2024 |
-| `acidentes_2024_pessoas.csv` | PRF — Dados Abertos | Um registro por pessoa envolvida em 2024 |
+| Arquivo | Fonte | Coleta | Descrição |
+|---|---|---|---|
+| `datatran2024.csv` | PRF — Dados Abertos | Manual | Um registro por acidente em 2024 |
+| `acidentes2024.csv` | PRF — Dados Abertos | Manual | Um registro por pessoa envolvida em 2024 |
+| `ibge_populacao.csv` | IBGE — API Pública | **Automática (crawler)** | Estimativa populacional por estado (2024) |
 
-Portal oficial: https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf
+Portal PRF: https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-da-prf  
+API IBGE: https://servicodados.ibge.gov.br/api/docs/agregados
 
 ---
 
@@ -38,14 +39,14 @@ Portal oficial: https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/d
 projeto-acidentes-prf/
 │
 ├── data/
-│   ├── raw/                          # CSVs originais baixados da PRF
-│   └── processed/                    # Dados tratados e agregados
+│   ├── raw/                          # Arquivos originais (PRF manual + IBGE via API)
+│   └── processed/                    # Dados tratados prontos para o dashboard
 │
 ├── pipeline/
-│   ├── 01_aquisicao.py               # Download dos CSVs do Google Drive
-│   ├── 02_integracao.py              # Concatenação e merge dos dados
+│   ├── 01_aquisicao.py               # Verifica CSVs da PRF + crawler API do IBGE
+│   ├── 02_integracao.py              # Merge entre ocorrências e pessoas
 │   ├── 03_limpeza.py                 # Limpeza e padronização
-│   └── 04_transformacao.py           # Novas variáveis e agregações
+│   └── 04_transformacao.py           # Novas variáveis e geração do arquivo final
 │
 ├── dashboards/
 │   ├── dashboard1_visao_geral.py     # Painel executivo
@@ -64,19 +65,20 @@ projeto-acidentes-prf/
 ## Pipeline de Dados
 
 ### 01 — Aquisição
-Download automático dos 4 arquivos CSV diretamente do Google Drive da PRF. O script verifica se o arquivo já existe antes de baixar, evitando downloads duplicados.
+- Verifica se os 2 CSVs da PRF estão presentes em `data/raw/` e avisa caso falte algum
+- Coleta automaticamente a estimativa populacional dos 27 estados via API pública do IBGE e salva como `ibge_populacao.csv`
 
 ### 02 — Integração
-- Concatenação dos dados de 2023 e 2024 para cada tipo (ocorrências e pessoas)
-- Merge entre o dataset de ocorrências e o de pessoas pelo `id` do acidente (relação 1:N)
-- Geração de 3 arquivos intermediários em `data/processed/`
+- Lê os dois CSVs da PRF (ocorrências e pessoas)
+- Faz merge entre os dois pelo `id` do acidente (relação 1:N)
+- Salva resultado em `data/processed/acidentes_merged.csv`
 
 ### 03 — Limpeza
 - Remoção de linhas duplicadas
 - Tratamento de valores ausentes (contagens de vítimas → 0, categorias → "Não informado")
 - Conversão de datas e horários para tipos corretos
 - Padronização de strings (maiúsculas, sem espaços extras)
-- Remoção de registros com datas inválidas ou fora do período 2023–2024
+- Remoção de registros com datas inválidas ou fora de 2024
 
 ### 04 — Transformação
 Novas colunas criadas:
@@ -85,22 +87,11 @@ Novas colunas criadas:
 |---|---|
 | `mes`, `mes_nome` | Mês numérico e abreviado |
 | `trimestre` | Trimestre do ano |
-| `semana_do_ano` | Semana epidemiológica |
+| `semana_do_ano` | Semana do ano |
 | `hora` | Hora do acidente (0–23) |
 | `periodo_dia` | Madrugada / Manhã / Tarde / Noite |
-| `faixa_horaria` | Agrupamento em blocos de 6h |
 | `gravidade` | Fatal / Grave / Leve / Sem vítimas |
 | `total_envolvidos` | Soma de mortos + feridos + ilesos |
 | `fim_de_semana` | True se sábado ou domingo |
 
-Agregações geradas para o dashboard:
-
-| Arquivo | Conteúdo |
-|---|---|
-| `acidentes_final.csv` | Base completa transformada |
-| `agg_por_estado.csv` | Totais e taxa de mortalidade por UF |
-| `agg_por_mes.csv` | Evolução mensal de acidentes e vítimas |
-| `agg_por_causa.csv` | Ranking de causas de acidente |
-| `agg_por_tipo.csv` | Ranking de tipos de acidente |
-| `agg_por_hora.csv` | Distribuição horária |
-| `agg_por_clima_gravidade.csv` | Cruzamento clima × gravidade |
+Arquivo gerado: `acidentes_final.csv` — base completa usada pelos dashboards.

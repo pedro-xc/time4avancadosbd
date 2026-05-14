@@ -72,8 +72,18 @@ def merge_ibge(df: pd.DataFrame, df_ibge: pd.DataFrame) -> pd.DataFrame:
     Merge com dados do IBGE pelo estado.
     Adiciona coluna de população por UF.
     """
+    mapa_uf = {
+        'AC': 'ACRE', 'AL': 'ALAGOAS', 'AP': 'AMAPÁ', 'AM': 'AMAZONAS', 'BA': 'BAHIA',
+        'CE': 'CEARÁ', 'DF': 'DISTRITO FEDERAL', 'ES': 'ESPÍRITO SANTO', 'GO': 'GOIÁS',
+        'MA': 'MARANHÃO', 'MT': 'MATO GROSSO', 'MS': 'MATO GROSSO DO SUL', 'MG': 'MINAS GERAIS',
+        'PA': 'PARÁ', 'PB': 'PARAÍBA', 'PR': 'PARANÁ', 'PE': 'PERNAMBUCO', 'PI': 'PIAUÍ',
+        'RJ': 'RIO DE JANEIRO', 'RN': 'RIO GRANDE DO NORTE', 'RS': 'RIO GRANDE DO SUL',
+        'RO': 'RONDÔNIA', 'RR': 'RORAIMA', 'SC': 'SANTA CATARINA', 'SP': 'SÃO PAULO',
+        'SE': 'SERGIPE', 'TO': 'TOCANTINS'
+    }
+    
     # Padroniza nome do estado para maiúsculo para fazer o join
-    df["uf_upper"] = df["uf"].str.upper().str.strip()
+    df["uf_upper"] = df["uf"].str.upper().str.strip().map(mapa_uf)
     df_ibge["uf_upper"] = df_ibge["uf_nome_ibge"].str.upper().str.strip()
 
     df = pd.merge(df, df_ibge[["uf_upper", "populacao"]], on="uf_upper", how="left")

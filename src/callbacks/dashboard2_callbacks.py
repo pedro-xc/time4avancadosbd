@@ -127,7 +127,11 @@ def register_dashboard2_callbacks(app, df):
             fig_radar.update_traces(
                 hovertemplate="<b>%{label}</b><br>Mortos: %{value}<extra></extra>"
             )
-            fig_radar.update_layout(coloraxis_showscale=False, margin=dict(t=50, l=10, r=10, b=10))
+            fig_radar.update_layout(
+                coloraxis_showscale=False, 
+                margin=dict(t=50, l=10, r=10, b=10),
+                height=600 # Aumenta a altura para preencher melhor a tela w-full
+            )
         else:
             fig_radar = px.scatter(title="Dados de pista, traçado ou mortos não disponíveis", template=template)
 

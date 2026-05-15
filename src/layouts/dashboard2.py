@@ -90,7 +90,7 @@ def create_dashboard2_layout(ufs_disponiveis, climas_disponiveis):
                     ),
                     className="shadow-sm border-0 rounded-4 mb-4"
                 ),
-                md=8, className="mx-auto"
+                md=12
             ),
         ])
     ], className="py-3 fade-in")

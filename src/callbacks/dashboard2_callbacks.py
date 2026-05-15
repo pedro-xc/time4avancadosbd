@@ -6,7 +6,8 @@ def register_dashboard2_callbacks(app, df):
         [Output('grafico-hora', 'figure'),
          Output('grafico-gravidade', 'figure'),
          Output('grafico-dispersao-pop', 'figure'),
-         Output('grafico-dia-semana', 'figure')],
+         Output('grafico-dia-semana', 'figure'),
+         Output('grafico-radar-via', 'figure')],
         [Input('filtro-uf', 'value'),
          Input('filtro-clima', 'value')]
     )
@@ -20,7 +21,7 @@ def register_dashboard2_callbacks(app, df):
 
         if dff.empty:
             vazio = px.scatter(title="Nenhum dado encontrado para este filtro", template="plotly_white")
-            return vazio, vazio, vazio, vazio
+            return vazio, vazio, vazio, vazio, vazio
 
         template = "plotly_white"
 
@@ -109,4 +110,22 @@ def register_dashboard2_callbacks(app, df):
         else:
             fig_dia_semana = px.bar(title="Dados de dia da semana não disponíveis", template=template)
 
-        return fig_hora, fig_gravidade, fig_dispersao, fig_dia_semana
+        if 'tracado_via' in dff.columns and 'mortos' in dff.columns:
+            dff_radar = dff.groupby('tracado_via', as_index=False)['mortos'].sum()
+            fig_radar = px.line_polar(
+                dff_radar,
+                r='mortos',
+                theta='tracado_via',
+                line_close=True,
+                title="Vítimas Fatais por Traçado da Via",
+                template=template
+            )
+            fig_radar.update_traces(
+                fill='toself', 
+                line_color='#e74c3c',
+                hovertemplate="<b>%{theta}</b><br>Mortos: %{r}<extra></extra>"
+            )
+        else:
+            fig_radar = px.scatter(title="Dados de traçado da via não disponíveis", template=template)
+
+        return fig_hora, fig_gravidade, fig_dispersao, fig_dia_semana, fig_radar

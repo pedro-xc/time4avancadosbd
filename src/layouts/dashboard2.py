@@ -80,5 +80,17 @@ def create_dashboard2_layout(ufs_disponiveis, climas_disponiveis):
                 ),
                 md=6
             ),
+        ]),
+
+        dbc.Row([
+            dbc.Col(
+                dbc.Card(
+                    dbc.CardBody(
+                        dcc.Graph(id='grafico-radar-via', config={'displayModeBar': False})
+                    ),
+                    className="shadow-sm border-0 rounded-4 mb-4"
+                ),
+                md=8, className="mx-auto"
+            ),
         ])
     ], className="py-3 fade-in")

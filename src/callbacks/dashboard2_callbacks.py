@@ -110,22 +110,25 @@ def register_dashboard2_callbacks(app, df):
         else:
             fig_dia_semana = px.bar(title="Dados de dia da semana não disponíveis", template=template)
 
-        if 'tracado_via' in dff.columns and 'mortos' in dff.columns:
-            dff_radar = dff.groupby('tracado_via', as_index=False)['mortos'].sum()
-            fig_radar = px.line_polar(
-                dff_radar,
-                r='mortos',
-                theta='tracado_via',
-                line_close=True,
-                title="Vítimas Fatais por Traçado da Via",
+        if 'tracado_via' in dff.columns and 'tipo_pista' in dff.columns and 'mortos' in dff.columns:
+            dff_tree = dff.groupby(['tipo_pista', 'tracado_via'], as_index=False)['mortos'].sum()
+            dff_tree = dff_tree[dff_tree['mortos'] > 0]
+            dff_tree['Raiz'] = 'Vítimas Fatais'
+
+            fig_radar = px.treemap(
+                dff_tree,
+                path=['Raiz', 'tipo_pista', 'tracado_via'],
+                values='mortos',
+                color='mortos',
+                color_continuous_scale='Reds',
+                title="Mortalidade: Tipo de Pista vs Traçado da Via",
                 template=template
             )
             fig_radar.update_traces(
-                fill='toself', 
-                line_color='#e74c3c',
-                hovertemplate="<b>%{theta}</b><br>Mortos: %{r}<extra></extra>"
+                hovertemplate="<b>%{label}</b><br>Mortos: %{value}<extra></extra>"
             )
+            fig_radar.update_layout(coloraxis_showscale=False, margin=dict(t=50, l=10, r=10, b=10))
         else:
-            fig_radar = px.scatter(title="Dados de traçado da via não disponíveis", template=template)
+            fig_radar = px.scatter(title="Dados de pista, traçado ou mortos não disponíveis", template=template)
 
         return fig_hora, fig_gravidade, fig_dispersao, fig_dia_semana, fig_radar

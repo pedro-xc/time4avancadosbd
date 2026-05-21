@@ -6,14 +6,14 @@ def load_data():
     print("Carregando dados... Isso pode levar alguns segundos.")
     try:
         df = pd.read_csv(data_path, sep=";", low_memory=False)
-        print(f"✅ Dados carregados: {len(df):,} registros.")
+        print(f"Dados carregados: {len(df):,} registros.")
 
         if 'hora' in df.columns:
             df['hora_int'] = pd.to_numeric(df['hora'], errors='coerce')
 
         return df
     except Exception as e:
-        print(f"❌ Erro ao carregar dados: {e}")
+        print(f"Erro ao carregar dados: {e}")
         return pd.DataFrame()
 
 def get_filter_options(df):

@@ -37,6 +37,9 @@ API IBGE: https://servicodados.ibge.gov.br/api/docs/agregados
 ```
 projeto-acidentes-prf/
 │
+├── assets/
+│   └── custom.css                    # Design system completo (Donezo verde premium)
+│
 ├── data/
 │   ├── raw/                          # Arquivos originais (PRF manual + IBGE via API)
 │   └── processed/                    # Dados tratados prontos para o dashboard
@@ -47,14 +50,19 @@ projeto-acidentes-prf/
 │   ├── 03_limpeza.py                 # Limpeza e padronização
 │   └── 04_transformacao.py           # Novas variáveis e geração do arquivo final
 │
-├── dashboards/
-│   ├── dashboard1_visao_geral.py     # Painel executivo
-│   ├── dashboard2_exploratorio.py    # Exploração interativa
-│   └── components/
-│       ├── graficos.py               # Funções reutilizáveis de gráficos
-│       └── layout.py                 # Componentes de layout Dash
+├── src/
+│   ├── callbacks/
+│   │   ├── dashboard1_callbacks.py   # Callbacks para os gráficos do Dashboard 1
+│   │   └── dashboard2_callbacks.py   # Callbacks e gráficos do Dashboard 2
+│   │
+│   ├── layouts/
+│   │   ├── dashboard1.py             # Layout do Dashboard 1 (Visão Geral)
+│   │   └── dashboard2.py             # Layout do Dashboard 2 (Exploração Interativa)
+│   │
+│   └── utils/
+│       └── data_manager.py           # Funções utilitárias de carga e KPIs
 │
-├── app.py                            # Ponto de entrada da aplicação
+├── app.py                            # Ponto de entrada da aplicação Dash
 └── README.md
 ```
 

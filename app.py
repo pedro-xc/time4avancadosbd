@@ -1,8 +1,10 @@
 import dash
 from dash import html, dcc, Input, Output
 
+from src.layouts.dashboard1 import create_dashboard1_layout
 from src.utils.data_manager import load_data, get_filter_options
 from src.layouts.dashboard2 import create_dashboard2_layout
+from src.callbacks.dashboard1_callbacks import register_dashboard1_callbacks
 from src.callbacks.dashboard2_callbacks import register_dashboard2_callbacks
 
 # -- Carregar Dados ---------------------------------------------------------
@@ -92,23 +94,24 @@ header = html.Header([
 
 # -- Dashboard 1 Placeholder ------------------------------------------------
 dashboard1_page = html.Div([
+html.Div([
     html.Div([
-        html.Div([
-            html.H1("Dashboard", className="page-title"),
-            html.P("Visao geral dos acidentes nas rodovias federais em 2024.", className="page-subtitle"),
-        ]),
-    ], className="page-header"),
-
-    html.Div([
-        html.Div([
-            html.H3("Visao Executiva", style={
-                'fontSize': '18px', 'fontWeight': '700', 'color': '#1A1A1A', 'marginBottom': '8px',
-            }),
-            html.P("Em desenvolvimento pelo time.", style={
-                'fontSize': '14px', 'color': '#6B7280',
-            }),
-        ], className="chart-card", style={'textAlign': 'center', 'padding': '60px 20px'}),
+        html.H1("Dashboard", className="page-title"),
+        html.P("Visão geral dos acidentes nas rodovias federais em 2024.", className="page-subtitle"),
     ]),
+], className="page-header"),
+
+html.Div([
+    html.Div([
+        html.H3("Acidentes em Rodovias Federais Brasileiras", style={
+            'fontSize': '18px', 'fontWeight': '700', 'color': '#1A1A1A', 'marginBottom': '8px',
+        }),
+        html.P("Análise consolidada de acidentes, causas e impactos nas principais rodovias federais do Brasil em 2024.", style={
+            'fontSize': '14px', 'color': '#6B7280',
+        }),
+    ], className="chart-card", style={'textAlign': 'center', 'padding': '60px 20px'}),
+]),
+ create_dashboard1_layout()
 ], id="page-dashboard1")
 
 
@@ -201,6 +204,7 @@ def render_page(pathname):
 
 
 # -- Registrar Callbacks ----------------------------------------------------
+register_dashboard1_callbacks()
 register_dashboard2_callbacks(app, df)
 
 # -- Executar ---------------------------------------------------------------

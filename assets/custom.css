@@ -557,6 +557,13 @@ body {
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-base);
     border: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-card .insight-text {
+    margin-top: auto;
+    padding-top: 10px;
 }
 
 .chart-card:hover {

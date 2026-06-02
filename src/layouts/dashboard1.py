@@ -88,30 +88,25 @@ def _calculate_kpis(acidentes):
 
 def _create_figures(uf_data, time_data, cause_data, class_data):
   
-    fig1 = px.bar(uf_data, x='uf', y='acidentes', 
-                  title='Acidentes por UF (2024)',
+    fig1 = px.bar(uf_data, x='uf', y='acidentes',
                   color='uf', color_discrete_sequence=px.colors.qualitative.Set3,
                   labels={'uf': 'UF', 'acidentes': 'Total de Acidentes'})
     fig1.update_layout(autosize=True, showlegend=False, xaxis={'categoryorder':'total descending'})
-    
-    fig2 = px.line(time_data, x='mes_nome', y='acidentes', 
-                   title='Acidentes por Mês (2024)',
+
+    fig2 = px.line(time_data, x='mes_nome', y='acidentes',
                    markers=True,
                    labels={'mes_nome': 'Mês', 'acidentes': 'Acidentes'})
     fig2.update_layout(autosize=True)
     fig2.update_traces(line_color='#ff7f0e', marker=dict(size=8))
-   
     fig2.update_xaxes(categoryorder='array', categoryarray=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'])
 
     fig3 = px.bar(cause_data, x='causa', y='acidentes',
-                  title='Causas Mais Frequentes (Top 6)',
                   color='causa', color_discrete_sequence=px.colors.qualitative.Pastel2,
                   labels={'causa': 'Causa', 'acidentes': 'Acidentes'})
     fig3.update_layout(autosize=True, showlegend=False, xaxis={'categoryorder':'total descending'})
 
     total_class = int(class_data['total'].sum())
     fig4 = px.pie(class_data, names='classificacao', values='total',
-                  title='Gravidade dos Acidentes (2024)',
                   hole=0.55,
                   color='classificacao',
                   color_discrete_map={
@@ -184,7 +179,7 @@ def create_dashboard1_layout():
         html.Div([
             html.Div("Causas Mais Frequentes", className="chart-card-title"),
             html.Div("Top 6 causas de acidentes nas rodovias federais", className="chart-card-subtitle"),
-            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'height': '420px'}),
             html.P("A velocidade incompatível lidera as causas, seguida de desatenção e embriaguez. Essas três causas juntas respondem pela maioria dos acidentes graves, reforçando que o comportamento do condutor é o principal fator de risco.", className="insight-text"),
         ], className="chart-card"),
         html.Div([

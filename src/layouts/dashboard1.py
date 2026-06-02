@@ -4,6 +4,7 @@ import dash_bootstrap_components as dbc
 from dash import html, dcc
 import numpy as np
 from datetime import datetime
+from src.insights.narrativas import get_dashboard_paragraphs
 
 def _load_data():
     try:
@@ -165,26 +166,32 @@ def create_dashboard1_layout():
         ])
     ], className="mb-4 shadow-sm")
     
+    paragraphs = get_dashboard_paragraphs()
+
     graph_cards = html.Div([
         html.Div([
             html.Div("Acidentes por UF", className="chart-card-title"),
             html.Div("Total de acidentes por estado em 2024", className="chart-card-subtitle"),
             dcc.Graph(figure=fig1, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+            html.P(paragraphs["Acidentes por UF"], className="insight-text"),
         ], className="chart-card"),
         html.Div([
             html.Div("Acidentes por Mês", className="chart-card-title"),
             html.Div("Evolução mensal dos acidentes em 2024", className="chart-card-subtitle"),
             dcc.Graph(figure=fig2, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+            html.P("Os meses de julho e outubro concentram os picos de acidentes, coincidindo com períodos de férias escolares e maior fluxo nas rodovias federais. O padrão sazonal indica a necessidade de reforço na fiscalização nesses períodos.", className="insight-text"),
         ], className="chart-card"),
         html.Div([
             html.Div("Causas Mais Frequentes", className="chart-card-title"),
             html.Div("Top 6 causas de acidentes nas rodovias federais", className="chart-card-subtitle"),
             dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+            html.P("A velocidade incompatível lidera as causas, seguida de desatenção e embriaguez. Essas três causas juntas respondem pela maioria dos acidentes graves, reforçando que o comportamento do condutor é o principal fator de risco.", className="insight-text"),
         ], className="chart-card"),
         html.Div([
             html.Div("Gravidade dos Acidentes", className="chart-card-title"),
             html.Div("Classificação por impacto às vítimas", className="chart-card-subtitle"),
             dcc.Graph(figure=fig4, config={'displayModeBar': False}, responsive=True, style={'height': '420px'}),
+            html.P("Mais da metade dos acidentes resultam em vítimas feridas ou fatais, evidenciando o alto custo humano dos acidentes nas rodovias federais. A proporção de acidentes fatais, embora menor, representa um dado alarmante que reforça a urgência de políticas preventivas.", className="insight-text"),
         ], className="chart-card"),
     ], className="chart-grid chart-grid--2col")
     

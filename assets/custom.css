@@ -706,6 +706,21 @@ body {
     color: var(--primary);
 }
 
+/* ── Insight Text ──────────────────────────────────────────── */
+.insight-text {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #F3F4F6;
+}
+
+.insight-text strong {
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* ── Animations ────────────────────────────────────────────── */
 @keyframes fadeInUp {
     from {

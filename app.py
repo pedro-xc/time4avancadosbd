@@ -1,5 +1,6 @@
 import dash
 from dash import html, dcc, Input, Output
+import dash_bootstrap_components as dbc
 
 from src.layouts.dashboard1 import create_dashboard1_layout
 from src.utils.data_manager import load_data, get_filter_options
@@ -14,6 +15,7 @@ ufs_disponiveis, climas_disponiveis = get_filter_options(df)
 # -- App Dash ---------------------------------------------------------------
 app = dash.Dash(
     __name__,
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True,
     title="PRF 2024 - Painel de Acidentes",
     update_title="Carregando...",
@@ -36,13 +38,13 @@ sidebar = html.Nav([
     html.Ul([
         html.Li(
             dcc.Link([
-                html.Span("Visao Geral"),
+                html.Span("Visão Geral"),
             ], href="/", className="sidebar-nav-link", id="nav-dashboard"),
             className="sidebar-nav-item"
         ),
         html.Li(
             dcc.Link([
-                html.Span("Exploracao"),
+                html.Span("Exploração"),
             ], href="/exploracao", className="sidebar-nav-link", id="nav-exploracao"),
             className="sidebar-nav-item"
         ),
@@ -96,22 +98,12 @@ header = html.Header([
 dashboard1_page = html.Div([
 html.Div([
     html.Div([
-        html.H1("Dashboard", className="page-title"),
+        html.H1("Visão Geral", className="page-title"),
         html.P("Visão geral dos acidentes nas rodovias federais em 2024.", className="page-subtitle"),
     ]),
 ], className="page-header"),
 
-html.Div([
-    html.Div([
-        html.H3("Acidentes em Rodovias Federais Brasileiras", style={
-            'fontSize': '18px', 'fontWeight': '700', 'color': '#1A1A1A', 'marginBottom': '8px',
-        }),
-        html.P("Análise consolidada de acidentes, causas e impactos nas principais rodovias federais do Brasil em 2024.", style={
-            'fontSize': '14px', 'color': '#6B7280',
-        }),
-    ], className="chart-card", style={'textAlign': 'center', 'padding': '60px 20px'}),
-]),
- create_dashboard1_layout()
+create_dashboard1_layout()
 ], id="page-dashboard1")
 
 
@@ -119,7 +111,7 @@ html.Div([
 dashboard2_page = html.Div([
     html.Div([
         html.Div([
-            html.H1("Exploracao Interativa", className="page-title"),
+            html.H1("Exploração Interativa", className="page-title"),
             html.P("Filtre e cruze variaveis para descobrir padroes ocultos nos acidentes.", className="page-subtitle"),
         ]),
     ], className="page-header"),

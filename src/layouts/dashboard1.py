@@ -17,7 +17,8 @@ def _load_data():
             'data_inversa': pd.date_range('2024-01-01', '2024-12-31', periods=500).strftime('%Y-%m-%d'),
             'mortos': np.random.randint(0, 5, 500),
             'feridos_leves': np.random.randint(0, 10, 500),
-            'feridos_graves': np.random.randint(0, 5, 500)
+            'feridos_graves': np.random.randint(0, 5, 500),
+            'classificacao_acidente': np.random.choice(['Com Vítimas Fatais', 'Com Vítimas Feridas', 'Sem Vítimas'], 500, p=[0.1, 0.55, 0.35])
         })
     try:
         datatran = pd.read_csv('datatran2024.csv', sep=None, engine='python')
@@ -68,8 +69,15 @@ def _process_data(acidentes, datatran):
     else:
         print("ERRO: coluna 'causa_acidente' não encontrada")
         cause_data = pd.DataFrame({'causa': [], 'acidentes': []})
-    
-    return uf_data, time_data, cause_data
+
+    class_data = None
+    if 'classificacao_acidente' in acidentes.columns:
+        class_data = acidentes['classificacao_acidente'].value_counts().reset_index()
+        class_data.columns = ['classificacao', 'total']
+    else:
+        class_data = pd.DataFrame({'classificacao': ['Com Vítimas Fatais', 'Com Vítimas Feridas', 'Sem Vítimas'], 'total': [0, 0, 0]})
+
+    return uf_data, time_data, cause_data, class_data
 
 def _calculate_kpis(acidentes):
     total = int(acidentes.shape[0])
@@ -77,18 +85,19 @@ def _calculate_kpis(acidentes):
     most_frequent_cause = acidentes['causa_acidente'].mode().iloc[0] if 'causa_acidente' in acidentes.columns and not acidentes.empty else 'N/A'
     return total, round(uf_mean, 1), most_frequent_cause
 
-def _create_figures(uf_data, time_data, cause_data):
+def _create_figures(uf_data, time_data, cause_data, class_data):
   
     fig1 = px.bar(uf_data, x='uf', y='acidentes', 
                   title='Acidentes por UF (2024)',
                   color='uf', color_discrete_sequence=px.colors.qualitative.Set3,
                   labels={'uf': 'UF', 'acidentes': 'Total de Acidentes'})
-    fig1.update_layout(showlegend=False, xaxis={'categoryorder':'total descending'})
+    fig1.update_layout(autosize=True, showlegend=False, xaxis={'categoryorder':'total descending'})
     
     fig2 = px.line(time_data, x='mes_nome', y='acidentes', 
                    title='Acidentes por Mês (2024)',
                    markers=True,
                    labels={'mes_nome': 'Mês', 'acidentes': 'Acidentes'})
+    fig2.update_layout(autosize=True)
     fig2.update_traces(line_color='#ff7f0e', marker=dict(size=8))
    
     fig2.update_xaxes(categoryorder='array', categoryarray=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'])
@@ -97,20 +106,46 @@ def _create_figures(uf_data, time_data, cause_data):
                   title='Causas Mais Frequentes (Top 6)',
                   color='causa', color_discrete_sequence=px.colors.qualitative.Pastel2,
                   labels={'causa': 'Causa', 'acidentes': 'Acidentes'})
-    fig3.update_layout(showlegend=False, xaxis={'categoryorder':'total descending'})
-    
-    return fig1, fig2, fig3
+    fig3.update_layout(autosize=True, showlegend=False, xaxis={'categoryorder':'total descending'})
+
+    total_class = int(class_data['total'].sum())
+    fig4 = px.pie(class_data, names='classificacao', values='total',
+                  title='Gravidade dos Acidentes (2024)',
+                  hole=0.55,
+                  color='classificacao',
+                  color_discrete_map={
+                      'Com Vítimas Fatais': '#EF4444',
+                      'Com Vítimas Feridas': '#F97316',
+                      'Sem Vítimas': '#22C55E'
+                  })
+    fig4.update_traces(
+        textposition='outside',
+        textinfo='percent',
+        hovertemplate='<b>%{label}</b><br>Total: %{value:,}<br>Percentual: %{percent}<extra></extra>'
+    )
+    fig4.update_layout(
+        autosize=True,
+        showlegend=True,
+        legend=dict(orientation='h', yanchor='bottom', y=-0.2, xanchor='center', x=0.5),
+        annotations=[dict(
+            text=f'<b>{total_class:,}</b><br>acidentes',
+            x=0.5, y=0.5,
+            font=dict(size=16, color='#1A1A1A'),
+            showarrow=False
+        )]
+    )
+
+    return fig1, fig2, fig3, fig4
 
 def create_dashboard1_layout():
     """Return Bootstrap layout for dashboard 1."""
     acidentes, datatran = _load_data()
-    uf_data, time_data, cause_data = _process_data(acidentes, datatran)
+    uf_data, time_data, cause_data, class_data = _process_data(acidentes, datatran)
     total_acidentes, media_estado, causa_top = _calculate_kpis(acidentes)
-    fig1, fig2, fig3 = _create_figures(uf_data, time_data, cause_data)
+    fig1, fig2, fig3, fig4 = _create_figures(uf_data, time_data, cause_data, class_data)
     
     kpi_card = dbc.Card([
         dbc.CardBody([
-            html.H5("KPIs", className="card-title"),
             html.Div([
                 dbc.Row([
                     dbc.Col(html.Div([
@@ -130,28 +165,32 @@ def create_dashboard1_layout():
         ])
     ], className="mb-4 shadow-sm")
     
-    graph_cards = dbc.Row([
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                dcc.Graph(figure=fig1, config={'displayModeBar': False})
-            ])
-        ], className="mb-4 shadow-sm"), width=12, lg=6),
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                dcc.Graph(figure=fig2, config={'displayModeBar': False})
-            ])
-        ], className="mb-4 shadow-sm"), width=12, lg=6),
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                dcc.Graph(figure=fig3, config={'displayModeBar': False})
-            ])
-        ], className="mb-4 shadow-sm"), width=12, lg=6)
-    ], className="g-4")
+    graph_cards = html.Div([
+        html.Div([
+            html.Div("Acidentes por UF", className="chart-card-title"),
+            html.Div("Total de acidentes por estado em 2024", className="chart-card-subtitle"),
+            dcc.Graph(figure=fig1, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+        ], className="chart-card"),
+        html.Div([
+            html.Div("Acidentes por Mês", className="chart-card-title"),
+            html.Div("Evolução mensal dos acidentes em 2024", className="chart-card-subtitle"),
+            dcc.Graph(figure=fig2, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+        ], className="chart-card"),
+        html.Div([
+            html.Div("Causas Mais Frequentes", className="chart-card-title"),
+            html.Div("Top 6 causas de acidentes nas rodovias federais", className="chart-card-subtitle"),
+            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
+        ], className="chart-card"),
+        html.Div([
+            html.Div("Gravidade dos Acidentes", className="chart-card-title"),
+            html.Div("Classificação por impacto às vítimas", className="chart-card-subtitle"),
+            dcc.Graph(figure=fig4, config={'displayModeBar': False}, responsive=True, style={'height': '420px'}),
+        ], className="chart-card"),
+    ], className="chart-grid chart-grid--2col")
     
     layout = dbc.Container([
-        html.H1("Dashboard Nacional de Acidentes 2024", className="mb-4 text-center"),
         kpi_card,
         graph_cards
-    ], fluid=True)
+    ], fluid=True, className="animate-fade-in")
     
     return layout

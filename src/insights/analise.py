@@ -31,13 +31,24 @@ def ensure_periodo_dia(df: pd.DataFrame) -> pd.DataFrame:
                 bins=[-1, 5, 11, 17, 23],
                 labels=["MADRUGADA", "MANHA", "TARDE", "NOITE"],
             )
+    else:
+        # Normaliza valores do pipeline (ex.: "Madrugada (0-5h)") para rótulos curtos maiúsculos
+        _periods = {"madrugada": "MADRUGADA", "manhã": "MANHA", "manha": "MANHA", "tarde": "TARDE", "noite": "NOITE"}
+        def _norm(v: str) -> str:
+            v_low = str(v).lower()
+            for key, label in _periods.items():
+                if key in v_low:
+                    return label
+            return str(v)
+        df["periodo_dia"] = df["periodo_dia"].apply(_norm)
     return df
 
 
 def compute_insights(df: pd.DataFrame) -> List[Dict[str, Any]]:
     df_acc = get_accident_level(df)
     df_acc = ensure_periodo_dia(df_acc)
-    df_acc["fim_de_semana"] = df_acc["dia_semana"].isin(["SABADO", "DOMINGO"])
+    # Normaliza "Sábado"/"sabado"/"SABADO" e variantes antes de comparar
+    df_acc["fim_de_semana"] = df_acc["dia_semana"].astype(str).str.lower().str.contains(r"s[aá]b|dom", na=False, regex=True)
     df_acc["chuva"] = df_acc["condicao_metereologica"].str.contains("CHUVA", na=False)
 
     insights: List[Dict[str, Any]] = []

@@ -75,11 +75,11 @@ def _create_figures(uf_data, time_data, cause_data, class_data):
                   color='uf', color_discrete_sequence=px.colors.qualitative.Set3,
                   labels={'uf': 'UF', 'acidentes': 'Total de Acidentes'})
     fig1.update_layout(
-        autosize=True, 
-        height=400, 
-        showlegend=False, 
-        xaxis={'categoryorder':'total descending'},
-        margin=dict(t=40, b=80, l=40, r=40),
+        autosize=True,
+        height=400,
+        showlegend=False,
+        xaxis=dict(categoryorder='total descending', tickangle=0, tickfont=dict(size=11)),
+        margin=dict(t=40, b=60, l=40, r=40),
         font=dict(size=12)
     )
 
@@ -90,27 +90,38 @@ def _create_figures(uf_data, time_data, cause_data, class_data):
     fig2.update_traces(line_color='#ff7f0e', marker=dict(size=8))
     fig2.update_xaxes(categoryorder='array', categoryarray=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'])
 
-    fig3 = px.bar(cause_data, x='causa', y='acidentes',
-                  color='causa', color_discrete_sequence=px.colors.qualitative.Pastel2,
-                  labels={'causa': 'Causa', 'acidentes': 'Acidentes'})
+    # Converte para title case e trunca labels para o eixo X não ficar enorme
+    cause_data_sorted = cause_data.sort_values('acidentes', ascending=False).copy()
+    cause_data_sorted['causa_label'] = cause_data_sorted['causa'].str.title().apply(
+        lambda x: x[:28] + '…' if len(x) > 28 else x
+    )
+    fig3 = px.bar(cause_data_sorted, x='causa_label', y='acidentes',
+                  color='causa_label', color_discrete_sequence=px.colors.qualitative.Pastel2,
+                  labels={'causa_label': '', 'acidentes': 'Acidentes'})
     fig3.update_layout(
-        autosize=True, 
-        height=900, 
-        showlegend=False, 
-        yaxis={'title_font': dict(size=10)},
-        margin=dict(t=40, b=250, l=60, r=60),
-        font=dict(size=9)
+        autosize=True,
+        height=420,
+        showlegend=False,
+        margin=dict(t=20, b=160, l=50, r=20),
+        font=dict(size=11),
+        xaxis=dict(title='', tickangle=-35, tickfont=dict(size=10)),
+        yaxis=dict(title='Acidentes', tickformat=','),
     )
 
-    total_class = int(class_data['total'].sum())
-    fig4 = px.pie(class_data, names='classificacao', values='total',
+    # Remove categorias negligenciáveis (< 0.1%) antes de plotar
+    total_sum = class_data['total'].sum()
+    class_data_clean = class_data[class_data['total'] / total_sum >= 0.001].copy()
+    total_class = int(class_data_clean['total'].sum())
+    # Mapeamento cobre tanto title case quanto maiúsculo (depende do CSV)
+    color_map = {
+        'Com Vítimas Fatais': '#EF4444', 'COM VÍTIMAS FATAIS': '#EF4444',
+        'Com Vítimas Feridas': '#F97316', 'COM VÍTIMAS FERIDAS': '#F97316',
+        'Sem Vítimas': '#22C55E',        'SEM VÍTIMAS': '#22C55E',
+    }
+    fig4 = px.pie(class_data_clean, names='classificacao', values='total',
                   hole=0.55,
                   color='classificacao',
-                  color_discrete_map={
-                      'Com Vítimas Fatais': '#EF4444',
-                      'Com Vítimas Feridas': '#F97316',
-                      'Sem Vítimas': '#22C55E'
-                  })
+                  color_discrete_map=color_map)
     fig4.update_traces(
         textposition='outside',
         textinfo='percent',
@@ -144,15 +155,15 @@ def create_dashboard1_layout():
                 dbc.Row([
                     dbc.Col(html.Div([
                         html.H6("Total de Acidentes", className="kpi-label"),
-                        html.H3(f"{total_acidentes:,}", className="kpi-value text-primary")
+                        html.Div(f"{total_acidentes:,}", className="kpi-badge kpi-badge--blue")
                     ]), width=4),
                     dbc.Col(html.Div([
                         html.H6("Média por Estado", className="kpi-label"),
-                        html.H3(f"{media_estado:.1f}", className="kpi-value text-success")
+                        html.Div(f"{media_estado:.1f}", className="kpi-badge kpi-badge--green")
                     ]), width=4),
                     dbc.Col(html.Div([
                         html.H6("Causa Mais Frequente", className="kpi-label"),
-                        html.H3(causa_top, className="kpi-value text-warning")
+                        html.Div(causa_top, className="kpi-badge kpi-badge--amber")
                     ]), width=4)
                 ], className="text-center")
             ])
@@ -177,7 +188,7 @@ def create_dashboard1_layout():
         html.Div([
             html.Div("Causas Mais Frequentes", className="chart-card-title"),
             html.Div("Top 6 causas de acidentes nas rodovias federais", className="chart-card-subtitle"),
-            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'minHeight': '500px'}),
+            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'height': '420px'}),
             html.P("A análise das causas mais frequentes revela que a reação tardia ou ineficiente é o principal fator de risco, acumulando aproximadamente 29 mil ocorrências. Notavelmente, as três causas predominantes concentram a vasta maioria dos acidentes registrados, evidenciando que o comportamento do condutor é o elemento crítico para a segurança viária. Estes dados reforçam a necessidade urgente de estratégias focadas na atenção e no tempo de resposta do motorista para mitigar significativamente a incidência de sinistros.", className="insight-text"),
         ], className="chart-card chart-card-large"),
         html.Div([

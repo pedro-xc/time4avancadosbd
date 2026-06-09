@@ -8,10 +8,10 @@ from src.insights.narrativas import get_dashboard_paragraphs
 
 def _load_data():
     try:
-        acidentes = pd.read_csv('acidentes2024.csv', sep=None, engine='python')
-        print("SUCESSO: acidentes2024.csv carregado")
+        acidentes = pd.read_csv('data/processed/acidentes_final.csv', sep=None, engine='python')
+        print("SUCESSO: acidentes_final.csv carregado")
     except FileNotFoundError:
-        print("ERRO: acidentes2024.csv não encontrado, usando dados de exemplo")
+        print("ERRO: acidentes_final.csv não encontrado, usando dados de exemplo")
         acidentes = pd.DataFrame({
             'uf': np.random.choice(['SP', 'MG', 'RJ', 'RS', 'PR', 'BA', 'SC', 'GO'], 500),
             'causa_acidente': np.random.choice(['Velocidade', 'Embriaguez', 'Desatenção', 'Chuva', 'Animal', 'Sinalização', 'Mecânica'], 500),
@@ -21,29 +21,13 @@ def _load_data():
             'feridos_graves': np.random.randint(0, 5, 500),
             'classificacao_acidente': np.random.choice(['Com Vítimas Fatais', 'Com Vítimas Feridas', 'Sem Vítimas'], 500, p=[0.1, 0.55, 0.35])
         })
-    try:
-        datatran = pd.read_csv('datatran2024.csv', sep=None, engine='python')
-        print("SUCESSO: datatran2024.csv carregado")
-    except FileNotFoundError:
-        print("ERRO: datatran2024.csv não encontrado, usando dados de exemplo")
-        datatran = pd.DataFrame({
-            'uf': np.random.choice(['SP', 'MG', 'RJ', 'RS', 'PR', 'BA', 'SC', 'GO'], 500),
-            'data_inversa': pd.date_range('2024-01-01', '2024-12-31', periods=500).strftime('%Y-%m-%d'),
-            'tipo_acidente': np.random.choice(['Colisão', 'Capotamento', 'Atropelamento', 'Queda'], 500),
-            'latitude': np.random.uniform(-30, -15, 500),
-            'longitude': np.random.uniform(-55, -40, 500)
-        })
-    return acidentes, datatran
+    return acidentes
 
-def _process_data(acidentes, datatran):
+def _process_data(acidentes):
     required_acidentes = ['uf', 'causa_acidente', 'data_inversa']
-    required_datatran = ['uf', 'data_inversa']
     uf_data = None
     if all(col in acidentes.columns for col in ['uf']):
         uf_data = acidentes['uf'].value_counts().reset_index()
-        uf_data.columns = ['uf', 'acidentes']
-    elif all(col in datatran.columns for col in ['uf']):
-        uf_data = datatran['uf'].value_counts().reset_index()
         uf_data.columns = ['uf', 'acidentes']
     else:
         print("ERRO: Nenhuma coluna 'uf' encontrada")
@@ -87,23 +71,36 @@ def _calculate_kpis(acidentes):
     return total, round(uf_mean, 1), most_frequent_cause
 
 def _create_figures(uf_data, time_data, cause_data, class_data):
-  
     fig1 = px.bar(uf_data, x='uf', y='acidentes',
                   color='uf', color_discrete_sequence=px.colors.qualitative.Set3,
                   labels={'uf': 'UF', 'acidentes': 'Total de Acidentes'})
-    fig1.update_layout(autosize=True, showlegend=False, xaxis={'categoryorder':'total descending'})
+    fig1.update_layout(
+        autosize=True, 
+        height=400, 
+        showlegend=False, 
+        xaxis={'categoryorder':'total descending'},
+        margin=dict(t=40, b=80, l=40, r=40),
+        font=dict(size=12)
+    )
 
     fig2 = px.line(time_data, x='mes_nome', y='acidentes',
                    markers=True,
                    labels={'mes_nome': 'Mês', 'acidentes': 'Acidentes'})
-    fig2.update_layout(autosize=True)
+    fig2.update_layout(autosize=True, height=350, margin=dict(t=40, b=40, l=40, r=40))
     fig2.update_traces(line_color='#ff7f0e', marker=dict(size=8))
     fig2.update_xaxes(categoryorder='array', categoryarray=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'])
 
     fig3 = px.bar(cause_data, x='causa', y='acidentes',
                   color='causa', color_discrete_sequence=px.colors.qualitative.Pastel2,
                   labels={'causa': 'Causa', 'acidentes': 'Acidentes'})
-    fig3.update_layout(autosize=True, showlegend=False, xaxis={'categoryorder':'total descending'})
+    fig3.update_layout(
+        autosize=True, 
+        height=900, 
+        showlegend=False, 
+        yaxis={'title_font': dict(size=10)},
+        margin=dict(t=40, b=250, l=60, r=60),
+        font=dict(size=9)
+    )
 
     total_class = int(class_data['total'].sum())
     fig4 = px.pie(class_data, names='classificacao', values='total',
@@ -121,6 +118,8 @@ def _create_figures(uf_data, time_data, cause_data, class_data):
     )
     fig4.update_layout(
         autosize=True,
+        height=420,
+        margin=dict(t=20, b=80, l=20, r=20),
         showlegend=True,
         legend=dict(orientation='h', yanchor='bottom', y=-0.2, xanchor='center', x=0.5),
         annotations=[dict(
@@ -134,9 +133,8 @@ def _create_figures(uf_data, time_data, cause_data, class_data):
     return fig1, fig2, fig3, fig4
 
 def create_dashboard1_layout():
-    """Return Bootstrap layout for dashboard 1."""
-    acidentes, datatran = _load_data()
-    uf_data, time_data, cause_data, class_data = _process_data(acidentes, datatran)
+    acidentes = _load_data()
+    uf_data, time_data, cause_data, class_data = _process_data(acidentes)
     total_acidentes, media_estado, causa_top = _calculate_kpis(acidentes)
     fig1, fig2, fig3, fig4 = _create_figures(uf_data, time_data, cause_data, class_data)
     
@@ -179,9 +177,9 @@ def create_dashboard1_layout():
         html.Div([
             html.Div("Causas Mais Frequentes", className="chart-card-title"),
             html.Div("Top 6 causas de acidentes nas rodovias federais", className="chart-card-subtitle"),
-            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'height': '420px'}),
-            html.P("A velocidade incompatível lidera as causas, seguida de desatenção e embriaguez. Essas três causas juntas respondem pela maioria dos acidentes graves, reforçando que o comportamento do condutor é o principal fator de risco.", className="insight-text"),
-        ], className="chart-card"),
+            dcc.Graph(figure=fig3, config={'displayModeBar': False}, responsive=True, style={'minHeight': '500px'}),
+            html.P("A análise das causas mais frequentes revela que a reação tardia ou ineficiente é o principal fator de risco, acumulando aproximadamente 29 mil ocorrências. Notavelmente, as três causas predominantes concentram a vasta maioria dos acidentes registrados, evidenciando que o comportamento do condutor é o elemento crítico para a segurança viária. Estes dados reforçam a necessidade urgente de estratégias focadas na atenção e no tempo de resposta do motorista para mitigar significativamente a incidência de sinistros.", className="insight-text"),
+        ], className="chart-card chart-card-large"),
         html.Div([
             html.Div("Gravidade dos Acidentes", className="chart-card-title"),
             html.Div("Classificação por impacto às vítimas", className="chart-card-subtitle"),

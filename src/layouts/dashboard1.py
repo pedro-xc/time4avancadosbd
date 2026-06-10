@@ -183,7 +183,7 @@ def create_dashboard1_layout():
             html.Div("Acidentes por Mês", className="chart-card-title"),
             html.Div("Evolução mensal dos acidentes em 2024", className="chart-card-subtitle"),
             dcc.Graph(figure=fig2, config={'displayModeBar': False}, responsive=True, style={'height': '350px'}),
-            html.P("Os meses de julho e outubro concentram os picos de acidentes, coincidindo com períodos de férias escolares e maior fluxo nas rodovias federais. O padrão sazonal indica a necessidade de reforço na fiscalização nesses períodos.", className="insight-text"),
+            html.P("Os meses de julho e dezembro concentram os picos de acidentes, coincidindo com períodos de férias escolares e maior fluxo nas rodovias federais. O padrão sazonal indica a necessidade de reforço na fiscalização nesses períodos.", className="insight-text"),
         ], className="chart-card"),
         html.Div([
             html.Div("Causas Mais Frequentes", className="chart-card-title"),
